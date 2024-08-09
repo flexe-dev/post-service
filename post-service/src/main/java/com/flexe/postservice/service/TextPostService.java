@@ -1,9 +1,13 @@
 package com.flexe.postservice.service;
 
+import com.flexe.postservice.entity.posts.PostNode;
 import com.flexe.postservice.entity.posts.text.TextPost;
 import com.flexe.postservice.repository.TextPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class TextPostService {
@@ -11,9 +15,13 @@ public class TextPostService {
     @Autowired
     private TextPostRepository repository;
 
-    public TextPost savePost(TextPost textPost) {
+    @Autowired
+    private PostInteractionService postInteractionService;
+
+    public TextPost savePost(TextPost post) {
         //Send Kafka Message to Generate Node
-        return repository.save(textPost);
+        postInteractionService.SaveNode(new PostNode(post));
+        return repository.save(post);
     }
 
     public TextPost getUserTextPostFromID(String id) { return repository.findById(id).orElse(null);}
@@ -22,9 +30,16 @@ public class TextPostService {
         return repository.findAllTextPostByUserId(userId);
     }
 
-public void deletePost(String postId) {
+    public void deleteAllPosts(TextPost[] posts){
+        repository.deleteAll(List.of(posts));
+    }
 
-        repository.deleteById(postId);
+    public void deletePost(String postId) {
+        TextPost post = repository.findById(postId).orElse(null);
+        if(post == null) return;
+
+        postInteractionService.DeleteNode(new PostNode(post));
+        repository.delete(post);
     }
 
 }

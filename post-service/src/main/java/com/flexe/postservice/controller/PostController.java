@@ -26,4 +26,10 @@ public class PostController {
         return ResponseEntity.ok(userPosts);
     }
 
+    public ResponseEntity<String> deleteAllUserPosts(@RequestBody UserPosts posts){
+        mediaPostService.deleteAllPosts(posts.getMediaPosts());
+        textPostService.deleteAllPosts(posts.getTextPosts());
+        return ResponseEntity.ok("All posts deleted");
+    }
+
 }

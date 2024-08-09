@@ -1,6 +1,6 @@
 package com.flexe.postservice.controller;
 
-import com.flexe.postservice.comments.CommentNode;
+import com.flexe.postservice.entity.comments.CommentNode;
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.posts.metrics.CommentReact;
 import com.flexe.postservice.service.PostCommentService;

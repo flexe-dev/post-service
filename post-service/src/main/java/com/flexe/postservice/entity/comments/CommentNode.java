@@ -1,4 +1,4 @@
-package com.flexe.postservice.comments;
+package com.flexe.postservice.entity.comments;
 
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.user.UserDisplay;

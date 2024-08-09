@@ -1,9 +1,14 @@
 package com.flexe.postservice.service;
 
+import com.flexe.postservice.entity.posts.PostNode;
 import com.flexe.postservice.entity.posts.media.MediaPost;
 import com.flexe.postservice.repository.MediaPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.print.attribute.standard.Media;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MediaPostService {
@@ -11,8 +16,11 @@ public class MediaPostService {
     @Autowired
     private MediaPostRepository repository;
 
+    @Autowired
+    private PostInteractionService postInteractionService;
+
     public MediaPost savePost(MediaPost post) {
-        //Send Kafka Message to Create Post Node
+        postInteractionService.SaveNode(new PostNode(post));
         return repository.save(post);
     }
 
@@ -24,9 +32,16 @@ public class MediaPostService {
         return repository.findAllPostByUserId(userId);
     }
 
+    public void deleteAllPosts(MediaPost[] posts) {
+        repository.deleteAll(List.of(posts));
+    }
+
     public void deletePost(String postId) {
+        MediaPost post = repository.findById(postId).orElse(null);
+        if(post == null) return;
         //Send Message to Kafka to Delete Post Node
-        repository.deleteById(postId);
+        postInteractionService.DeleteNode(new PostNode(post));
+        repository.delete(post);
     }
 
 }

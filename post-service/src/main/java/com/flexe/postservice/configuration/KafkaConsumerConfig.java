@@ -1,5 +1,7 @@
 package com.flexe.postservice.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flexe.postservice.entity.posts.UserPosts;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +10,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +29,25 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
+    public ConsumerFactory<String, UserPosts> postsConsumerFactory(){
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "flexe-post-service");
+        ObjectMapper om = new ObjectMapper();
+        return new DefaultKafkaConsumerFactory<>(configProps,new StringDeserializer(), new JsonDeserializer<>(UserPosts.class, om, false));
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserPosts> kafkaPostsListenerContainerFactory(){
+        ConcurrentKafkaListenerContainerFactory<String, UserPosts> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(postsConsumerFactory());
         return factory;
     }
 

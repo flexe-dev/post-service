@@ -1,7 +1,8 @@
 package com.flexe.postservice.consumer;
 
+import com.flexe.postservice.entity.posts.PostInteraction;
 import com.flexe.postservice.entity.posts.UserPosts;
-import com.flexe.postservice.entity.user.UserDisplay;
+import com.flexe.postservice.enums.PostInteractionEnums.*;
 import com.flexe.postservice.service.MediaPostService;
 import com.flexe.postservice.service.TextPostService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

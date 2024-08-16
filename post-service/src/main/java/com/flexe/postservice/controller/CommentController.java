@@ -4,6 +4,7 @@ import com.flexe.postservice.entity.comments.CommentNode;
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.posts.metrics.CommentReact;
 import com.flexe.postservice.service.PostCommentService;
+import com.flexe.postservice.entity.posts.PostNode.PostType;
 import io.sentry.Sentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +26,11 @@ public class CommentController {
         return ResponseEntity.ok(service.getPostComments(postId));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/add/{postType}")
     @ResponseBody
-    public ResponseEntity<Comment> addComment(@RequestBody Comment comment) {
+    public ResponseEntity<Comment> addComment(@RequestBody Comment comment, @PathVariable PostType postType) {
         try{
-            Comment addedComment = service.saveComment(comment);
+            Comment addedComment = service.saveComment(comment, postType);
             if(addedComment == null){
                 throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Comment not added");
             }
@@ -41,11 +42,11 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/delete/comment")
-    public ResponseEntity<String> deleteCommentById(@RequestBody CommentNode comment) {
+    @DeleteMapping("/delete/comment/{postType}")
+    public ResponseEntity<Integer> deleteCommentById(@RequestBody CommentNode comment, @PathVariable PostType postType) {
         try{
-            service.deleteComment(comment);
-            return ResponseEntity.ok("Comment deleted");
+            Integer commentsDeleted = service.deleteComment(comment, postType);
+            return ResponseEntity.ok(commentsDeleted);
         }
         catch (Exception e){
             Sentry.captureException(e);

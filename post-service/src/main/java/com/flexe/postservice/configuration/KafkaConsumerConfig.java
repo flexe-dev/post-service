@@ -1,6 +1,8 @@
 package com.flexe.postservice.configuration;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flexe.postservice.entity.posts.PostInteraction;
 import com.flexe.postservice.entity.posts.UserPosts;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -18,37 +20,30 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConsumerConfig {
 
-    @Bean
-    public ConsumerFactory<String, String> consumerFactory() {
+    private <T> ConsumerFactory<String, T> createConsumerFactory(Class<T> clazz){
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "flexe-post-service");
-        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(configProps);
-    }
-
-    @Bean
-    public ConsumerFactory<String, UserPosts> postsConsumerFactory(){
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "flexe-post-service");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "flexe-interaction-service");
         ObjectMapper om = new ObjectMapper();
-        return new DefaultKafkaConsumerFactory<>(configProps,new StringDeserializer(), new JsonDeserializer<>(UserPosts.class, om, false));
+        JavaType type = om.getTypeFactory().constructType(clazz);
+        return new DefaultKafkaConsumerFactory<>(configProps,new StringDeserializer(), new JsonDeserializer<>(type, om, false));
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+    private <T> ConcurrentKafkaListenerContainerFactory<String, T> createKafkaListenerContainerFactory(Class<T> clazz){
+        ConcurrentKafkaListenerContainerFactory<String, T> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(createConsumerFactory(clazz));
         return factory;
     }
+
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, UserPosts> kafkaPostsListenerContainerFactory(){
-        ConcurrentKafkaListenerContainerFactory<String, UserPosts> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(postsConsumerFactory());
-        return factory;
+        return createKafkaListenerContainerFactory(UserPosts.class);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PostInteraction> kafkaPostInteractionListenerContainerFactory(){
+        return createKafkaListenerContainerFactory(PostInteraction.class);
     }
 
 }

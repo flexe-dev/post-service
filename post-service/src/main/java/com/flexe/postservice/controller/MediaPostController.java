@@ -39,6 +39,54 @@ public class MediaPostController {
         }
     }
 
+    @PostMapping("/like/{postId}/{userId}")
+    public ResponseEntity<String> likePost(@PathVariable String postId, @PathVariable String userId) {
+        try{
+            service.likePost(postId, userId);
+            return ResponseEntity.ok("Post liked");
+        }
+        catch (Exception e){
+            Sentry.captureException(e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/unlike/{postId}/{userId}")
+    public ResponseEntity<String> unlikePost(@PathVariable String postId, @PathVariable String userId) {
+        try{
+            service.unlikePost(postId, userId);
+            return ResponseEntity.ok("Post unliked");
+        }
+        catch (Exception e){
+            Sentry.captureException(e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/save/{postId}/{userId}")
+    public ResponseEntity<String> savePost(@PathVariable String postId, @PathVariable String userId){
+        try{
+            service.favouritePost(postId, userId);
+            return ResponseEntity.ok("Post saved");
+        }
+        catch (Exception e){
+            Sentry.captureException(e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/unsave/{postId}/{userId}")
+    public ResponseEntity<String> unsavePost(@PathVariable String postId, @PathVariable String userId){
+        try{
+            service.unfavouritePost(postId, userId);
+            return ResponseEntity.ok("Post unsaved");
+        }
+        catch (Exception e){
+            Sentry.captureException(e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MediaPost> getUserPostFromID(@PathVariable String id) {
 

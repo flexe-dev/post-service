@@ -1,6 +1,7 @@
 package com.flexe.postservice.service;
 
 import com.flexe.postservice.entity.comments.CommentNode;
+import com.flexe.postservice.entity.posts.PostNode.PostType;
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.posts.metrics.CommentReact;
 import com.flexe.postservice.entity.posts.metrics.CommentReact.ReactType;
@@ -20,6 +21,12 @@ public class PostCommentService {
     private PostCommentRepository repository;
     @Autowired
     private CommentReactionRepository reactionRepository;
+
+    @Autowired
+    private MediaPostService mediaPostService;
+
+    @Autowired
+    private TextPostService textPostService;
 
     @Autowired
     private UserService userService;
@@ -63,9 +70,19 @@ public class PostCommentService {
         return commentTree.toArray(new CommentNode[0]);
     }
 
+    public Comment saveComment(Comment comment, PostType type){
+        //Increment Comment count on Post
+        switch(type){
+            case TEXT -> textPostService.incrementCommentCount(comment.getPostId(), 1);
+            case MEDIA -> mediaPostService.incrementCommentCount(comment.getPostId(), 1);
+            default -> throw new IllegalArgumentException("Invalid Post Type");
+        }
+        return saveComment(comment);
+    }
+
     public Comment saveComment(Comment comment){
-        if(comment.getId() == null){
-           comment.setId(new ObjectId().toHexString());
+        if(comment.getId() == null || comment.getId().isEmpty()){
+            comment.setId(new ObjectId().toHexString());
         }
         return repository.save(comment);
     }
@@ -75,10 +92,16 @@ public class PostCommentService {
         repository.deleteAllByPostId(postId);
     }
 
-    public void deleteComment(CommentNode comment){
+    public Integer deleteComment(CommentNode comment, PostType type){
         List<String> commentIds = new ArrayList<>();
         traverseCommentNode(comment, commentIds);
         repository.deleteAllById(commentIds);
+        switch(type){
+            case TEXT -> textPostService.incrementCommentCount(comment.getComment().getPostId(), -commentIds.size());
+            case MEDIA -> mediaPostService.incrementCommentCount(comment.getComment().getPostId(), -commentIds.size());
+            default -> throw new IllegalArgumentException("Invalid Post Type");
+        }
+        return commentIds.size();
     }
 
     public Map<String, CommentReact.ReactType> getUserCommentReactions(String userId, String postId){

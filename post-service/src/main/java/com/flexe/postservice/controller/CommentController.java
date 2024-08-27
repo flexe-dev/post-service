@@ -1,6 +1,6 @@
 package com.flexe.postservice.controller;
 
-import com.flexe.postservice.entity.comments.CommentNode;
+import com.flexe.postservice.entity.posts.metrics.CommentNode;
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.posts.metrics.CommentReact;
 import com.flexe.postservice.service.PostCommentService;
@@ -14,9 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Date;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
-@RequestMapping("api/post/comment")
+@RequestMapping("api/comment")
 public class CommentController {
     @Autowired
     private PostCommentService service;

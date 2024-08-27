@@ -2,6 +2,8 @@ package com.flexe.postservice.controller;
 
 
 import com.flexe.postservice.entity.posts.media.MediaPost;
+import com.flexe.postservice.entity.response.ErrorResponse;
+import com.flexe.postservice.exceptions.PostNotFoundException;
 import com.flexe.postservice.service.MediaPostService;
 import com.flexe.postservice.service.PostCommentService;
 import io.sentry.Sentry;
@@ -11,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
-@RequestMapping("api/post/media")
+@RequestMapping("api/media")
 public class MediaPostController {
 
     @Autowired
@@ -87,12 +89,12 @@ public class MediaPostController {
         }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("find/{id}")
     public ResponseEntity<MediaPost> getUserPostFromID(@PathVariable String id) {
 
         MediaPost post =  service.getUserPostFromID(id);
         if(post == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
+            throw new PostNotFoundException("Post Not Found");
         }
         return ResponseEntity.ok(post);
     }
@@ -102,7 +104,7 @@ public class MediaPostController {
 
         MediaPost[] posts = service.getAllPostFromUser(userId);
         if(posts == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Posts not found");
+            throw new PostNotFoundException("Posts Not Found");
         }
 
         return ResponseEntity.ok(posts);

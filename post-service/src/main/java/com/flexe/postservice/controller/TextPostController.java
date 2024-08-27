@@ -1,6 +1,7 @@
 package com.flexe.postservice.controller;
 
 import com.flexe.postservice.entity.posts.text.TextPost;
+import com.flexe.postservice.exceptions.PostNotFoundException;
 import com.flexe.postservice.service.PostCommentService;
 import com.flexe.postservice.service.TextPostService;
 import io.sentry.Sentry;
@@ -10,9 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
-@RequestMapping("api/post/text")
+@RequestMapping("api/text")
 public class TextPostController {
 
     @Autowired
@@ -85,11 +86,11 @@ public class TextPostController {
         }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/find/{id}")
     public ResponseEntity<TextPost> getUserPostFromID(@PathVariable String id) {
         TextPost post = service.getUserTextPostFromID(id);
         if(post == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
+            throw new PostNotFoundException("Post Not Found");
         }
         return ResponseEntity.ok(post);
     }
@@ -98,7 +99,7 @@ public class TextPostController {
     public ResponseEntity<TextPost[]> getAllPostFromUser(@PathVariable String userId) {
         TextPost[] userTextPosts = service.getAllTextPostFromUser(userId);
         if(userTextPosts == null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Posts not found");
+            throw new PostNotFoundException("No posts found");
         }
         return ResponseEntity.ok(userTextPosts);
     }

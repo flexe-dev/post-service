@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8081"})
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:8082"})
 @RestController
 @RequestMapping("api/post")
 public class PostController {
@@ -24,12 +24,6 @@ public class PostController {
         userPosts.setMediaPosts(mediaPostService.getAllPostFromUser(userId));
         userPosts.setTextPosts(textPostService.getAllTextPostFromUser(userId));
         return ResponseEntity.ok(userPosts);
-    }
-
-    public ResponseEntity<String> deleteAllUserPosts(@RequestBody UserPosts posts){
-        mediaPostService.deleteAllPosts(posts.getMediaPosts());
-        textPostService.deleteAllPosts(posts.getTextPosts());
-        return ResponseEntity.ok("All posts deleted");
     }
 
 }

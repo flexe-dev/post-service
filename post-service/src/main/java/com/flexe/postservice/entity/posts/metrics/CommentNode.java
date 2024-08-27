@@ -1,6 +1,5 @@
-package com.flexe.postservice.entity.comments;
+package com.flexe.postservice.entity.posts.metrics;
 
-import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.user.UserDisplay;
 
 import java.util.ArrayList;

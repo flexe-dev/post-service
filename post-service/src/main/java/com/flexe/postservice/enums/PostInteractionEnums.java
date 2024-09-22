@@ -15,5 +15,7 @@ public class PostInteractionEnums {
         SHARE,
         COMMENT,
         VIEW,
+        REPOST,
+        UNREPOST
     }
 }

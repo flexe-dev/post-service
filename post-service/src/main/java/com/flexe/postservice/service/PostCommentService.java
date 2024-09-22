@@ -97,8 +97,8 @@ public class PostCommentService {
         traverseCommentNode(comment, commentIds);
         repository.deleteAllById(commentIds);
         switch(type){
-            case TEXT -> textPostService.incrementCommentCount(comment.getComment().getPostId(), -commentIds.size());
-            case MEDIA -> mediaPostService.incrementCommentCount(comment.getComment().getPostId(), -commentIds.size());
+            case TEXT -> textPostService.decrementCommentCount(comment.getComment().getPostId(), commentIds.size());
+            case MEDIA -> mediaPostService.decrementCommentCount(comment.getComment().getPostId(), commentIds.size());
             default -> throw new IllegalArgumentException("Invalid Post Type");
         }
         return commentIds.size();

@@ -44,6 +44,14 @@ public class PostInteractionService {
         SendPostInteractionMessage(interaction, PostInteractionEnum.UNSAVE);
     }
 
+    public void RepostPost(PostInteraction interaction){
+        SendPostInteractionMessage(interaction, PostInteractionEnum.REPOST);
+    }
+
+    public void RemovePostRepost(PostInteraction interaction){
+        SendPostInteractionMessage(interaction, PostInteractionEnum.UNREPOST);
+    }
+
     private  void SendPostInteractionMessage(PostInteraction interaction, PostInteractionEnum action){
         postInteractionKafkaTemplate.send("post-interaction", action.toString(), interaction);
     }

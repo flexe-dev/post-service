@@ -21,8 +21,9 @@ public class MediaPostService {
     private PostInteractionService postInteractionService;
 
     public MediaPost savePost(MediaPost post) {
-        postInteractionService.SaveNode(new PostNode(post));
-        return repository.save(post);
+        MediaPost newPost = repository.save(post);
+        postInteractionService.SaveNode(new PostNode(newPost));
+        return newPost;
     }
 
     public MediaPost getUserPostFromID(String id) {
@@ -52,28 +53,32 @@ public class MediaPostService {
 
     public void likePost(String postId, String userId){
         MediaPost post = getMediaPostOrThrow(postId);
-        postInteractionService.LikePost(new PostInteraction(postId, userId));
+        PostNode node = new PostNode(post);
+        postInteractionService.LikePost(new PostInteraction(node, userId));
         post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() + 1);
         repository.save(post);
     }
 
     public void unlikePost(String postId, String userId){
         MediaPost post = getMediaPostOrThrow(postId);
-        postInteractionService.UnlikePost(new PostInteraction(postId, userId));
+        PostNode node = new PostNode(post);
+        postInteractionService.UnlikePost(new PostInteraction(node, userId));
         post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() - 1);
         repository.save(post);
     }
 
     public void favouritePost(String postId, String userId){
         MediaPost post = getMediaPostOrThrow(postId);
-        postInteractionService.SavePost(new PostInteraction(postId, userId));
+        PostNode node = new PostNode(post);
+        postInteractionService.SavePost(new PostInteraction(node, userId));
         post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() + 1);
         repository.save(post);
     }
 
     public void unfavouritePost(String postId, String userId){
         MediaPost post = getMediaPostOrThrow(postId);
-        postInteractionService.UnsavePost(new PostInteraction(postId, userId));
+        PostNode node = new PostNode(post);
+        postInteractionService.UnsavePost(new PostInteraction(node, userId));
         post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() - 1);
         repository.save(post);
     }

@@ -1,98 +1,56 @@
 package com.flexe.postservice.service;
 
-import com.flexe.postservice.entity.posts.PostInteraction;
-import com.flexe.postservice.entity.posts.PostNode;
-import com.flexe.postservice.entity.posts.media.MediaPost;
-import com.flexe.postservice.repository.MediaPostRepository;
+import com.flexe.postservice.entity.posts.core.MediaPost;
+import com.flexe.postservice.entity.posts.core.Post;
+import com.flexe.postservice.entity.posts.media.MediaDocument;
+import com.flexe.postservice.repository.MediaDocumentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.print.attribute.standard.Media;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class MediaPostService {
 
     @Autowired
-    private MediaPostRepository repository;
+    private PostService postService;
 
     @Autowired
-    private PostInteractionService postInteractionService;
+    private MediaDocumentRepository repository;
 
     public MediaPost savePost(MediaPost post) {
-        MediaPost newPost = repository.save(post);
-        postInteractionService.SaveNode(new PostNode(newPost));
-        return newPost;
+        //Saves Core Post Object and sends Kafka Message
+        Post savedPost = postService.savePost(post);
+
+        //Sets Post Reference in Text Content Object
+        if(post.getDocument().getPostId() == null){
+            post.getDocument().setPostId(savedPost.getId());
+        }
+
+        //Saves TextContent Object
+        MediaDocument content = repository.save(post.getDocument());
+        return new MediaPost(savedPost, content);
     }
 
-    public MediaPost getUserPostFromID(String id) {
-        return repository.findById(id).orElse(null);
+    public MediaPost findPostById(String id) {
+        Post post = postService.getPostOrThrow(id);
+        MediaDocument content = getDocumentOrThrow(id);
+
+        return new MediaPost(post, content);
     }
 
-    public MediaPost[] getAllPostFromUser(String userId) {
-        return repository.findAllPostByUserId(userId);
-    }
+    public MediaDocument getMediaDocumentByPostId(String id) { return repository.findById(id).orElse(null);}
 
-    public void deleteAllPosts(MediaPost[] posts) {
-        repository.deleteAll(List.of(posts));
-    }
-
-    public MediaPost getMediaPostOrThrow(String postId){
-        MediaPost post = getUserPostFromID(postId);
-        if(post == null) throw new IllegalArgumentException("Post not found");
-        return post;
+    public MediaDocument getDocumentOrThrow(String id){
+        MediaDocument document = getMediaDocumentByPostId(id);
+        if(document == null) throw new IllegalArgumentException("Post not found");
+        return document;
     }
 
     public void deletePost(String postId) {
-        MediaPost post = getMediaPostOrThrow(postId);
-        //Send Message to Kafka to Delete Post Node
-        postInteractionService.DeleteNode(new PostNode(post));
-        repository.delete(post);
-    }
+        MediaDocument document = repository.findById(postId).orElse(null);
+        if(document == null) return;
 
-    public void likePost(String postId, String userId){
-        MediaPost post = getMediaPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.LikePost(new PostInteraction(node, userId));
-        post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() + 1);
-        repository.save(post);
-    }
-
-    public void unlikePost(String postId, String userId){
-        MediaPost post = getMediaPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.UnlikePost(new PostInteraction(node, userId));
-        post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() - 1);
-        repository.save(post);
-    }
-
-    public void favouritePost(String postId, String userId){
-        MediaPost post = getMediaPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.SavePost(new PostInteraction(node, userId));
-        post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() + 1);
-        repository.save(post);
-    }
-
-    public void unfavouritePost(String postId, String userId){
-        MediaPost post = getMediaPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.UnsavePost(new PostInteraction(node, userId));
-        post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() - 1);
-        repository.save(post);
-    }
-
-    public void incrementCommentCount(String postId, Integer count){
-        MediaPost post = getMediaPostOrThrow(postId);
-        post.getMetrics().setCommentCount(post.getMetrics().getCommentCount() + count);
-        repository.save(post);
-    }
-
-    public void decrementCommentCount(String postId, Integer count){
-        MediaPost post = getMediaPostOrThrow(postId);
-        post.getMetrics().setCommentCount(post.getMetrics().getCommentCount() - count);
-        repository.save(post);
+        postService.deletePost(postId);
+        repository.delete(document);
     }
 
 }

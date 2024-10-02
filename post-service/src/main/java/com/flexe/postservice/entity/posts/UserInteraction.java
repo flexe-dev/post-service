@@ -1,4 +1,4 @@
-package com.flexe.postservice.entity.posts.text;
+package com.flexe.postservice.entity.posts;
 
 import org.springframework.lang.NonNull;
 

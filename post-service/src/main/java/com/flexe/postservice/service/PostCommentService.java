@@ -1,17 +1,16 @@
 package com.flexe.postservice.service;
 
 import com.flexe.postservice.entity.posts.metrics.CommentNode;
-import com.flexe.postservice.entity.posts.PostNode.PostType;
 import com.flexe.postservice.entity.posts.metrics.Comment;
 import com.flexe.postservice.entity.posts.metrics.CommentReact;
 import com.flexe.postservice.entity.posts.metrics.CommentReact.ReactType;
-import com.flexe.postservice.entity.user.UserDisplay;
 import com.flexe.postservice.repository.CommentReactionRepository;
 import com.flexe.postservice.repository.PostCommentRepository;
+import jakarta.annotation.PostConstruct;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.reactive.function.client.WebClient;
 import java.util.*;
 
 @Service
@@ -23,13 +22,19 @@ public class PostCommentService {
     private CommentReactionRepository reactionRepository;
 
     @Autowired
-    private MediaPostService mediaPostService;
+    private PostService postService;
 
     @Autowired
-    private TextPostService textPostService;
+    private HTTPService httpService;
 
-    @Autowired
-    private UserService userService;
+    private WebClient client;
+    private String serverPrefix;
+
+    @PostConstruct
+    public void init(){
+        this.client = httpService.generateWebClient(HTTPService.TargetServer.INTERACTION);
+        this.serverPrefix = httpService.getUriPrefix(HTTPService.TargetController.NODE);
+    }
 
     public CommentNode[] getPostComments(String postId) {
         Comment[] comments = repository.findAllByPostId(postId);
@@ -37,53 +42,47 @@ public class PostCommentService {
     }
 
     private CommentNode[] generateCommentTree(Comment[] comments){
-
-        Map<String, List<Comment>> commentMap = new HashMap<>();
-        for(Comment comment: comments){
-            commentMap.computeIfAbsent(comment.getParentId(), k -> new ArrayList<>()).add(comment);
-        }
-        Map<String, CommentNode> commentNodeMap = new HashMap<>();
-        Map<String, UserDisplay> userCommentMap = new HashMap<>();
-        for(Comment comment: comments){
-            CommentNode node = new CommentNode(comment);
-            if(!userCommentMap.containsKey(comment.getUserId())){
-                //Send a request to User Service to get User Details
-                UserDisplay user = userService.findUser(comment.getUserId());
-                userCommentMap.put(comment.getUserId(), user);
-            }
-            node.setUser(userCommentMap.get(comment.getUserId()));
-            commentNodeMap.put(comment.getId(), node);
-        }
-
-        List<CommentNode> commentTree = new ArrayList<>();
-        for(Comment comment: comments){
-            if(comment.getParentId() == null || !commentMap.containsKey(comment.getParentId())){
-                commentTree.add(commentNodeMap.get(comment.getId()));
-            }
-            else{
-            CommentNode parent = commentNodeMap.get(comment.getParentId());
-            parent.addChild(commentNodeMap.get(comment.getId()));
-            }
-
-        }
-
-        return commentTree.toArray(new CommentNode[0]);
-    }
-
-    public Comment saveComment(Comment comment, PostType type){
-        //Increment Comment count on Post
-        switch(type){
-            case TEXT -> textPostService.incrementCommentCount(comment.getPostId(), 1);
-            case MEDIA -> mediaPostService.incrementCommentCount(comment.getPostId(), 1);
-            default -> throw new IllegalArgumentException("Invalid Post Type");
-        }
-        return saveComment(comment);
+        //TODO: Move Comment Storage and Generation into Graph Database
+        return new ArrayList<CommentNode>().toArray(new CommentNode[0]);
+//        Map<String, List<Comment>> commentMap = new HashMap<>();
+//        for(Comment comment: comments){
+//            commentMap.computeIfAbsent(comment.getParentId(), k -> new ArrayList<>()).add(comment);
+//        }
+//        Map<String, CommentNode> commentNodeMap = new HashMap<>();
+//        Set<String> userSet = new HashSet<>();
+//        Arrays.stream(comments).map(Comment::getUserId).forEach(userSet::add);
+//
+//        //Fetch User Details
+//
+//        for(Comment comment: comments){
+//            CommentNode node = new CommentNode(comment);
+//            userSet.add(comment.getUserId());
+//            node.setUser(userCommentMap.get(comment.getUserId()));
+//            commentNodeMap.put(comment.getId(), node);
+//        }
+//
+//        Map<String, UserDisplay> userCommentMap = new HashMap<>();
+//        List<CommentNode> commentTree = new ArrayList<>();
+//        for(Comment comment: comments){
+//            if(comment.getParentId() == null || !commentMap.containsKey(comment.getParentId())){
+//                commentTree.add(commentNodeMap.get(comment.getId()));
+//            }
+//            else{
+//            CommentNode parent = commentNodeMap.get(comment.getParentId());
+//            parent.addChild(commentNodeMap.get(comment.getId()));
+//            }
+//
+//        }
+//
+//        return commentTree.toArray(new CommentNode[0]);
     }
 
     public Comment saveComment(Comment comment){
         if(comment.getId() == null || comment.getId().isEmpty()){
             comment.setId(new ObjectId().toHexString());
         }
+
+        postService.incrementCommentCount(comment.getPostId());
         return repository.save(comment);
     }
 
@@ -92,15 +91,11 @@ public class PostCommentService {
         repository.deleteAllByPostId(postId);
     }
 
-    public Integer deleteComment(CommentNode comment, PostType type){
+    public Integer deleteComment(CommentNode comment){
         List<String> commentIds = new ArrayList<>();
         traverseCommentNode(comment, commentIds);
         repository.deleteAllById(commentIds);
-        switch(type){
-            case TEXT -> textPostService.decrementCommentCount(comment.getComment().getPostId(), commentIds.size());
-            case MEDIA -> mediaPostService.decrementCommentCount(comment.getComment().getPostId(), commentIds.size());
-            default -> throw new IllegalArgumentException("Invalid Post Type");
-        }
+        postService.decrementCommentCount(comment.getComment().getPostId(), commentIds.size());
         return commentIds.size();
     }
 

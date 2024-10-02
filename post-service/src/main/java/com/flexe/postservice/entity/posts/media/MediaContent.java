@@ -1,6 +1,12 @@
 package com.flexe.postservice.entity.posts.media;
 
-class MediaContent {
+import com.flexe.postservice.enums.PostEnums.PostContentType;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MediaContent {
     private String id;
     private String location;
     private PostContentType format;
@@ -9,10 +15,8 @@ class MediaContent {
     private String alt;
     private Boolean uploaded;
 
-    private enum PostContentType {
-        IMAGE,
-        VIDEO,
-        GIF
+    public MediaContent() {
     }
+
 
 }

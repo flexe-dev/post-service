@@ -1,10 +1,8 @@
 package com.flexe.postservice.consumer;
 
-import com.flexe.postservice.entity.posts.PostInteraction;
-import com.flexe.postservice.entity.posts.UserPosts;
-import com.flexe.postservice.enums.PostInteractionEnums.*;
-import com.flexe.postservice.service.MediaPostService;
-import com.flexe.postservice.service.TextPostService;
+import com.flexe.postservice.entity.user.UserNode;
+import com.flexe.postservice.service.PostService;
+import com.flexe.postservice.enums.UserInteractionEnums.UserNodeModificationEnum;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,16 +12,15 @@ import org.springframework.stereotype.Component;
 public class MessageConsumer {
 
     @Autowired
-    private MediaPostService mediaPostService;
+    private PostService postService;
 
-    @Autowired
-    private TextPostService textPostService;
+    @KafkaListener(topics = "user-node-action", groupId = "flexe-post-service", containerFactory = "kafkaUserListenerContainerFactory")
+    public void UserPostConsumer(ConsumerRecord<String, UserNode> userPostsMessage){
+        UserNodeModificationEnum action = UserNodeModificationEnum.valueOf(userPostsMessage.key());
+        UserNode user = userPostsMessage.value();
 
-    @KafkaListener(topics = "user-post-delete", groupId = "flexe-post-service", containerFactory = "kafkaPostsListenerContainerFactory")
-    public void UserPostConsumer(ConsumerRecord<String, UserPosts> userPostsMessage){
-        UserPosts posts = userPostsMessage.value();
-        mediaPostService.deleteAllPosts(posts.getMediaPosts());
-        textPostService.deleteAllPosts(posts.getTextPosts());
+        if(action == UserNodeModificationEnum.SAVE) return;
+        postService.DeleteUserPosts(user.getUserId());
     }
 
 }

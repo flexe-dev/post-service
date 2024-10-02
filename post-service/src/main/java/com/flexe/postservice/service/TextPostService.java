@@ -1,98 +1,58 @@
 package com.flexe.postservice.service;
 
-import com.flexe.postservice.entity.posts.PostInteraction;
-import com.flexe.postservice.entity.posts.PostNode;
-import com.flexe.postservice.entity.posts.media.MediaPost;
-import com.flexe.postservice.entity.posts.text.TextPost;
-import com.flexe.postservice.repository.TextPostRepository;
+import com.flexe.postservice.entity.posts.core.Post;
+import com.flexe.postservice.entity.posts.core.TextPost;
+import com.flexe.postservice.entity.posts.text.TextContent;
+import com.flexe.postservice.repository.TextContentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class TextPostService {
 
     @Autowired
-    private TextPostRepository repository;
+    private TextContentRepository repository;
 
     @Autowired
-    private PostInteractionService postInteractionService;
+    private PostService postService;
 
     public TextPost savePost(TextPost post) {
-        //Send Kafka Message to Generate Node
-        TextPost savedPost = repository.save(post);
-        postInteractionService.SaveNode(new PostNode(savedPost));
-        return savedPost;
+        //Saves Core Post Object and sends Kafka Message
+        Post savedPost = postService.savePost(post);
+
+        //Sets Post Reference in Text Content Object
+        if(post.getTextContent().getPostId() == null){
+            post.getTextContent().setPostId(savedPost.getId());
+        }
+
+        //Saves TextContent Object
+        TextContent content = repository.save(post.getTextContent());
+        return new TextPost(savedPost, content);
     }
 
-    public TextPost getUserTextPostFromID(String id) { return repository.findById(id).orElse(null);}
+    public TextPost findPostById(String id) {
+        Post post = postService.getPostOrThrow(id);
+        TextContent content = getTextContentOrThrow(id);
 
-    public TextPost getTextPostOrThrow(String id){
-        TextPost post = getUserTextPostFromID(id);
+        return new TextPost(post, content);
+    }
+
+    public TextContent getTextContentByPostId(String id) { return repository.findById(id).orElse(null);}
+
+    public TextContent getTextContentOrThrow(String id){
+        TextContent post = getTextContentByPostId(id);
         if(post == null) throw new IllegalArgumentException("Post not found");
         return post;
     }
 
-    public TextPost[] getAllTextPostFromUser(String userId) {
-        return repository.findAllTextPostByUserId(userId);
-    }
-
-    public void deleteAllPosts(TextPost[] posts){
-        repository.deleteAll(List.of(posts));
-    }
-
     public void deletePost(String postId) {
-        TextPost post = repository.findById(postId).orElse(null);
+        TextContent post = repository.findById(postId).orElse(null);
         if(post == null) return;
 
-        postInteractionService.DeleteNode(new PostNode(post));
+        postService.deletePost(postId);
         repository.delete(post);
     }
 
-    public void likePost(String postId, String userId){
-        TextPost post = getTextPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.LikePost(new PostInteraction(node, userId));
-        post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() + 1);
-        repository.save(post);
-    }
 
-    public void unlikePost(String postId, String userId){
-        TextPost post = getTextPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.UnlikePost(new PostInteraction(node, userId));
-        post.getMetrics().setLikeCount(post.getMetrics().getLikeCount() - 1);
-        repository.save(post);
-    }
-
-    public void favouritePost(String postId, String userId){
-        TextPost post = getTextPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.SavePost(new PostInteraction(node, userId));
-        post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() + 1);
-        repository.save(post);
-    }
-
-    public void unfavouritePost(String postId, String userId){
-        TextPost post = getTextPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.UnsavePost(new PostInteraction(node, userId));
-        post.getMetrics().setSaveCount(post.getMetrics().getSaveCount() - 1);
-        repository.save(post);
-    }
-
-    public void incrementCommentCount(String postId, Integer count){
-        TextPost post = getTextPostOrThrow(postId);
-        post.getMetrics().setCommentCount(post.getMetrics().getCommentCount() + count);
-        repository.save(post);
-    }
-
-    public void decrementCommentCount(String postId, Integer count){
-        TextPost post = getTextPostOrThrow(postId);
-        post.getMetrics().setCommentCount(post.getMetrics().getCommentCount() - count);
-        repository.save(post);
-    }
 
 }

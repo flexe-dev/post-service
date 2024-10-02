@@ -3,7 +3,7 @@ package com.flexe.postservice.configuration;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flexe.postservice.entity.posts.PostInteraction;
-import com.flexe.postservice.entity.posts.UserPosts;
+import com.flexe.postservice.entity.user.UserNode;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -37,8 +37,8 @@ public class KafkaConsumerConfig {
 
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserPosts> kafkaPostsListenerContainerFactory(){
-        return createKafkaListenerContainerFactory(UserPosts.class);
+    public ConcurrentKafkaListenerContainerFactory<String, UserNode> kafkaUserListenerContainerFactory(){
+        return createKafkaListenerContainerFactory(UserNode.class);
     }
 
     @Bean

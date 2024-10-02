@@ -1,7 +1,13 @@
 package com.flexe.postservice.entity.posts.media;
 
+import com.flexe.postservice.enums.PostEnums.ContentType;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Map;
 
+@Getter
+@Setter
 public class PostContent {
     private String id;
     private Map<String, Object> style;
@@ -12,50 +18,7 @@ public class PostContent {
 
     private ContentType type;
 
-    public enum ContentType {
-        TEXT,
-        IMAGE,
-        VIDEO,
-        CAROUSEL,
+    public PostContent() {
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Map<String, Object> getStyle() {
-        return style;
-    }
-
-    public void setStyle(Map<String, Object> style) {
-        this.style = style;
-    }
-
-    public Map<String, Object> getOptions() {
-        return options;
-    }
-
-    public void setOptions(Map<String, Object> options) {
-        this.options = options;
-    }
-
-    public Map<String, Object> getValue() {
-        return value;
-    }
-
-    public void setValue(Map<String, Object> value) {
-        this.value = value;
-    }
-
-    public ContentType getType() {
-        return type;
-    }
-
-    public void setType(ContentType type) {
-        this.type = type;
-    }
 }

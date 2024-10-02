@@ -1,10 +1,10 @@
 package com.flexe.postservice.entity.posts;
 
-import com.flexe.postservice.entity.posts.media.MediaPost;
-import com.flexe.postservice.entity.posts.text.TextPost;
+import com.flexe.postservice.entity.posts.core.Post;
+import com.flexe.postservice.enums.PostEnums;
+import com.flexe.postservice.enums.PostEnums.PostType;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,33 +20,20 @@ public class PostNode {
 
     //Metadata
     private List<String> tags;
-    private List<String> tech;
     private List<String> keywords;
 
-    public enum PostType{
-        TEXT,
-        MEDIA
-    }
 
     public PostNode(){
 
     }
 
-    public PostNode(MediaPost post){
+    public PostNode(Post post){
         this.postId = post.getId();
-        this.userId = post.getAuxData().getUserID();
         this.postDate = post.getAuxData().getDateCreated();
+        this.userId = post.getAuxData().getUserID();
         this.type = PostType.MEDIA;
         this.tags = post.getAuxData().getTags();
-        this.tech = post.getAuxData().getTech();
-    }
-
-    public PostNode(TextPost post){
-        this.postId = post.getId();
-        this.userId = post.getUserID();
-        this.type = PostType.TEXT;
-        this.tags = new ArrayList<>();
-        this.tech = new ArrayList<>();
+        this.keywords = new ArrayList<>();
     }
 
 }

@@ -6,6 +6,7 @@ import com.flexe.postservice.entity.posts.common.PostMetrics;
 import com.flexe.postservice.enums.PostEnums.PostType;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @Setter
 @Document(collection = "Posts")
 public class Post {
+    @Id
     private String id;
     private PostAuxData auxData;
     private PostMetrics metrics;
@@ -24,10 +26,11 @@ public class Post {
     public Post() {
     }
 
-    public Post(String id, PostAuxData auxData, PostMetrics metrics) {
+    public Post(String id, PostAuxData auxData, PostMetrics metrics, PostType postType) {
         this.id = id;
         this.auxData = auxData;
         this.metrics = metrics;
+        this.postType = postType;
     }
 
     public static Map<String, Post> toMap(Post[] posts){

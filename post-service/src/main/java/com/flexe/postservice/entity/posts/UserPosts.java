@@ -18,7 +18,8 @@ public class UserPosts {
     private TextPost[] textPosts;
 
     public UserPosts(){
-
+        this.mediaPosts = new MediaPost[0];
+        this.textPosts = new TextPost[0];
     }
 
     public UserPosts(MediaPost[] mediaPosts, TextPost[] textPosts){

@@ -31,7 +31,7 @@ public class PostNode {
         this.postId = post.getId();
         this.postDate = post.getAuxData().getDateCreated();
         this.userId = post.getAuxData().getUserID();
-        this.type = PostType.MEDIA;
+        this.type = post.getPostType();
         this.tags = post.getAuxData().getTags();
         this.keywords = new ArrayList<>();
     }

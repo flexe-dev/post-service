@@ -7,6 +7,14 @@ public class PostEnums {
         MEDIA
     }
 
+    public static PostType getPostType(Integer type){
+        return switch (type) {
+            case 0 -> PostType.TEXT;
+            case 1 -> PostType.MEDIA;
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+    }
+
     public enum PostContentType {
         IMAGE,
         VIDEO,

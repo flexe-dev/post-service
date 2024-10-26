@@ -10,7 +10,12 @@ import java.util.Map;
 @Setter
 public class FeedDisplay {
     UserFeed userFeed;
-    Map<RecipientType, List<PostFeedReference>> recipientReferences;
+    List<OriginReferenceLookup> recipientReferences;
 
     public FeedDisplay(){}
+
+    public FeedDisplay(FeedDisplay feedDisplay){
+        this.userFeed = feedDisplay.getUserFeed();
+        this.recipientReferences = feedDisplay.getRecipientReferences();
+    }
 }

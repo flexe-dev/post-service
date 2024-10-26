@@ -26,8 +26,13 @@ public class PostController {
     }
 
     @PostMapping("/feed")
-    public ResponseEntity<FeedPost<? extends Post>> getFeed(@RequestBody List<FeedDisplay> postReferences){
-        return ResponseEntity.ok(null);
+    public ResponseEntity<List<FeedPost<?>>> getFeed(@RequestBody List<FeedDisplay> postReferences){
+        List<FeedPost<?>> fetchedPosts = postService.GetPostsFromFeedReference(postReferences);
+        if(fetchedPosts == null){
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(fetchedPosts);
     }
 
     @PostMapping("/like/{postId}/{userId}")
@@ -67,3 +72,4 @@ public class PostController {
     }
 
 }
+

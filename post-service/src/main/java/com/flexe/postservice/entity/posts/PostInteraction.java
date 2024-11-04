@@ -17,15 +17,8 @@ public class PostInteraction {
     @Nullable
     private String targetId;
 
-    public PostInteraction(@NonNull PostNode post, @NonNull String userId, @Nullable String targetId) {
-        this.post = post;
-        this.userId = userId;
-        this.targetId = targetId;
-    }
+    public PostInteraction(){
 
-    public PostInteraction(@NonNull PostNode post, @NonNull String userId) {
-        this.post = post;
-        this.userId = userId;
     }
 
 }

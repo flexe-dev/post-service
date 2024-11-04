@@ -20,8 +20,6 @@ public class PostNode {
 
     //Metadata
     private List<String> tags;
-    private List<String> keywords;
-
 
     public PostNode(){
 
@@ -33,7 +31,6 @@ public class PostNode {
         this.userId = post.getAuxData().getUserID();
         this.type = post.getPostType();
         this.tags = post.getAuxData().getTags();
-        this.keywords = new ArrayList<>();
     }
 
 }

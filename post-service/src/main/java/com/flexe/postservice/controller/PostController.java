@@ -35,41 +35,5 @@ public class PostController {
         return ResponseEntity.ok(fetchedPosts);
     }
 
-    @PostMapping("/like/{postId}/{userId}")
-    public ResponseEntity<String> likePost(@PathVariable String postId, @PathVariable String userId){
-        postService.likePost(postId, userId);
-        return ResponseEntity.ok("Post liked");
-    }
-
-    @PostMapping("/remove/like/{postId}/{userId}")
-    public ResponseEntity<String> removeLike(@PathVariable String postId, @PathVariable String userId){
-        postService.unlikePost(postId, userId);
-        return ResponseEntity.ok("Like removed");
-    }
-
-    @PostMapping("/favourite/{postId}/{userId}")
-    public ResponseEntity<String> favouritePost(@PathVariable String postId, @PathVariable String userId){
-        postService.favouritePost(postId, userId);
-        return ResponseEntity.ok("Post favourited");
-    }
-
-    @PostMapping("/remove/favourite/{postId}/{userId}")
-    public ResponseEntity<String> removeFavourite(@PathVariable String postId, @PathVariable String userId){
-        postService.removeFavouritePost(postId, userId);
-        return ResponseEntity.ok("Favourite removed");
-    }
-
-    @PostMapping("/repost/{postId}/{userId}")
-    public ResponseEntity<String> repostPost(@PathVariable String postId, @PathVariable String userId){
-        postService.repostPost(postId, userId);
-        return ResponseEntity.ok("Post reposted");
-    }
-
-    @PostMapping("/remove/repost/{postId}/{userId}")
-    public ResponseEntity<String> removeRepost(@PathVariable String postId, @PathVariable String userId){
-        postService.removeRepost(postId, userId);
-        return ResponseEntity.ok("Repost removed");
-    }
-
 }
 

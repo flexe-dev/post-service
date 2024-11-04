@@ -24,6 +24,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,47 +101,32 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    public Post retrievePostAndSendInteraction(String postId, String userId, PostInteractionEnum action){
-        Post post = getPostOrThrow(postId);
-        PostNode node = new PostNode(post);
-        postInteractionService.SendPostInteractionMessage(new PostInteraction(node, userId), action);
-        return post;
+    public void likePost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().likePost());
     }
 
-    public void likePost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.LIKE);
-        post.getMetrics().likePost();
-        postRepository.save(post);
+    public void unlikePost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().removeLike());
     }
 
-    public void unlikePost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.UNLIKE);
-        post.getMetrics().removeLike();
-        postRepository.save(post);
+    public void favouritePost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().savePost());
     }
 
-    public void favouritePost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.SAVE);
-        post.getMetrics().savePost();
-        postRepository.save(post);
+    public void removeFavouritePost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().removeSave());
     }
 
-    public void removeFavouritePost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.UNSAVE);
-        post.getMetrics().removeSave();
-        postRepository.save(post);
+    public void repostPost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().repostPost());
     }
 
-    public void repostPost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.REPOST);
-        post.getMetrics().repostPost();
-        postRepository.save(post);
+    public void removeRepost(PostInteraction interaction){
+      HandlePostInteraction(interaction, post -> post.getMetrics().removeRepost());
     }
 
-    public void removeRepost(String postId, String userId){
-        Post post = retrievePostAndSendInteraction(postId, userId, PostInteractionEnum.UNREPOST);
-        post.getMetrics().removeRepost();
-        postRepository.save(post);
+    public void viewPost(PostInteraction interaction){
+        HandlePostInteraction(interaction, post -> post.getMetrics().viewPost());
     }
 
     public void incrementCommentCount(String postId){
@@ -153,6 +140,13 @@ public class PostService {
         post.getMetrics().removeComment(count);
         postRepository.save(post);
     }
+
+    public void HandlePostInteraction(PostInteraction interaction, Consumer<Post> interactionHandler){
+        Post post = getPostOrThrow(interaction.getPost().getPostId());
+        interactionHandler.accept(post);
+        postRepository.save(post);
+    }
+
     // Fetches all Posts from a list of references
     public List<FeedPost<?>> GetPostsFromFeedReference(List<FeedDisplay> postReferences) {
 
